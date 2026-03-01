@@ -547,6 +547,10 @@
                 ctx.fillText(item.emoji + " y=" + Math.round(item.y), 10, 55 + i * 25);
             });
             
+            // 测试：画红色矩形
+            ctx.fillStyle = "red";
+            ctx.fillRect(50, 100, 50, 50);
+            
             // 绘制物品
             items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
