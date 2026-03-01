@@ -361,6 +361,9 @@
             firstFrame = true;
             lastSpawnTime = 0;
             
+            // 立即生成一个测试物品
+            spawnItem();
+            
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
             updateUI();
