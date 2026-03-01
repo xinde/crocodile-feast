@@ -421,7 +421,7 @@
             items.push({
                 ...selectedItem,
                 x: Math.random() * (canvas.width - 60) + 30,
-                y: -40,
+                y: 0,
                 rotation: 0,
                 wobble: Math.random() * Math.PI * 2
             });
@@ -531,7 +531,7 @@
 
         // ==================== 绘制 ====================
         function draw() {
-            console.log("DEBUG draw() 被调用, gameState=", gameState);
+            
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -549,17 +549,16 @@
             });
             
             // 测试：画红色矩形
-            ctx.fillStyle = "red";
-            ctx.fillRect(50, 100, 50, 50);
             
-            console.log("DEBUG: 绘制前items长度=", items.length);
+            
+            
             // 绘制物品
             items.forEach((item, idx) => {
                 console.log("绘制物品", idx, item.emoji, item.x, item.y);
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillStyle = "yellow"; ctx.fillRect(item.x - 10, item.y - 10, 20, 20);
+                ctx.fillText(item.emoji, item.x, item.y);
             });
             
             // 绘制鳄鱼
