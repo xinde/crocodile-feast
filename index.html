@@ -532,10 +532,10 @@
             
             // 绘制物品
             items.forEach(item => {
-                ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
+                ctx.font = "24px Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Arial";
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.beginPath(); ctx.arc(item.x, item.y, 15, 0, Math.PI*2); ctx.fillStyle = "red"; ctx.fill(); ctx.fillStyle = "white"; ctx.fillText(item.emoji, item.x, item.y);
+                ctx.fillText(item.emoji, item.x, item.y);
             });
             
             // 绘制鳄鱼
