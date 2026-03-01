@@ -373,7 +373,11 @@
         }
 
         function gameLoop(timestamp) {
-            if (gameState !== 'playing') return;
+            console.log('🔄 gameLoop called, gameState:', gameState, 'timestamp:', timestamp);
+            if (gameState !== 'playing') {
+                console.log('⚠️ 返回，不执行');
+                return;
+            }
             
             // 第一次运行时初始化时间戳
             if (firstFrame || !timestamp) {
