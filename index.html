@@ -532,8 +532,6 @@
         function draw() {
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "red";
-            ctx.fillRect(50, 50, 100, 100);
             
             // 绘制波浪背景
             drawWaves();
@@ -572,32 +570,17 @@
             ctx.save();
             ctx.translate(x, y);
             
-            // 身体
+            // 身体 - 使用emoji
             ctx.font = `${size}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🐊', 0, 0);
-            
-            // 眼睛
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(-size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
-            ctx.arc(size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(-size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
-            ctx.arc(size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
-            ctx.fill();
             
             ctx.restore();
         }
 
         function drawStartScreen() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "red";
-            ctx.fillRect(50, 50, 100, 100);
             
             // 背景
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
