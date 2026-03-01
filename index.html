@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>鳄鱼大胃王 🐊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(180deg, #006994 0%, #003366 100%);
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #lives {
+            color: #ff6b6b;
+        }
+
+        #score {
+            color: #ffd93d;
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 20, 40, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            color: white;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 200, 0, 0.8);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #88ccff;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        #finalScore {
+            font-size: 60px;
+            color: #ffd93d;
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(255, 217, 61, 0.8);
+        }
+
+        .highScore {
+            color: #88ccff;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            color: #88ccff;
+            font-size: 14px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .flash {
+            animation: flashRed 0.3s ease-out;
+        }
+
+        @keyframes flashRed {
+            0%, 100% { filter: none; }
+            50% { filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5); }
+        }
+
+        .score-popup {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd93d;
+            text-shadow: 0 0 10px rgba(255, 217, 61, 0.8);
+            pointer-events: none;
+            animation: popUp 0.8s ease-out forwards;
+        }
+
+        @keyframes popUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div class="stat" id="lives">❤️❤️❤️❤️❤️</div>
+        <div class="stat" id="score">� score: 0</div>
+    </div>
+
+    <div id="startScreen">
+        <h1>🐊 鳄鱼大胃王</h1>
+        <p class="subtitle">吃到海里动物变大，吃到炸弹减命！</p>
+        <button class="btn" id="startBtn">开始游戏</button>
+        <p class="instructions">
+            🖱️ 鼠标/触摸拖动控制<br>
+            📱 左右倾斜手机控制
+        </p>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1>游戏结束</h1>
+        <div id="finalScore">0</div>
+        <p class="highScore">最高分: <span id="highScoreDisplay">0</span></p>
+        <button class="btn" id="restartBtn">再来一次</button>
+    </div>
+
+    <script>
+        // ==================== 游戏配置 ====================
+        const CONFIG = {
+            INITIAL_LIVES: 5,
+            INITIAL_CROC_SIZE: 80,
+            MIN_CROC_SIZE: 40,
+            MAX_CROC_SIZE: 150,
+            BASE_DROP_SPEED: 2,
+            BASE_SPAWN_INTERVAL: 1500,
+            SPEED_INCREMENT: 0.1,
+            INTERVAL_DECREMENT: 0.05,
+            MAX_SPEED_MULTIPLIER: 2
+        };
+
+        // ==================== 游戏元素 ====================
+        const ITEMS = [
+            // 大鱼 - 变大
+            { type: 'big_fish', emoji: '🐟', points: 10, effect: 'grow', weight: 25 },
+            { type: 'big_fish', emoji: '🐠', points: 10, effect: 'grow', weight: 20 },
+            { type: 'big_fish', emoji: '🐡', points: 10, effect: 'grow', weight: 15 },
+            // 小鱼 - 变小
+            { type: 'small_fish', emoji: '🦐', points: 5, effect: 'shrink', weight: 15 },
+            { type: 'small_fish', emoji: '🦑', points: 5, effect: 'shrink', weight: 10 },
+            { type: 'small_fish', emoji: '🐙', points: 5, effect: 'shrink', weight: 10 },
+            // 缩小食物
+            { type: 'shrink_food', emoji: '🧊', points: 5, effect: 'shrink', weight: 8 },
+            { type: 'shrink_food', emoji: '❄️', points: 5, effect: 'shrink', weight: 7 },
+            // 炸弹 - 减命
+            { type: 'bomb', emoji: '💣', points: 0, effect: 'damage', weight: 10 }
+        ];
+
+        // ==================== 游戏状态 ====================
+        let canvas, ctx;
+        let gameState = 'start'; // start, playing, gameOver
+        let crocodile = { x: 0, y: 0, size: CONFIG.INITIAL_CROC_SIZE, targetX: 0 };
+        let items = [];
+        let score = 0;
+        let lives = CONFIG.INITIAL_LIVES;
+        let dropSpeed = CONFIG.BASE_DROP_SPEED;
+        let spawnInterval = CONFIG.BASE_SPAWN_INTERVAL;
+        let lastSpawnTime = 0;
+        let animationId;
+        let highScore = parseInt(localStorage.getItem('crocodileHighScore')) || 0;
+        let isDragging = false;
+        let gyroEnabled = false;
+
+        // ==================== 音频 ====================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'eat':
+                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.15);
+                    break;
+                case 'damage':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'gameOver':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+                    gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.5);
+                    break;
+            }
+        }
+
+        // ==================== 初始化 ====================
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 鼠标/触摸控制
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp);
+            
+            // 陀螺仪
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', onDeviceOrientation);
+            }
+            
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('restartBtn').addEventListener('click', startGame);
+            
+            drawStartScreen();
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (gameState === 'start') {
+                drawStartScreen();
+            }
+        }
+
+        // ==================== 控制 ====================
+        function onPointerDown(e) {
+            e.preventDefault();
+            isDragging = true;
+            updatePointerPosition(e);
+        }
+
+        function onPointerMove(e) {
+            e.preventDefault();
+            if (isDragging && gameState === 'playing') {
+                updatePointerPosition(e);
+            }
+        }
+
+        function onPointerUp(e) {
+            isDragging = false;
+        }
+
+        function updatePointerPosition(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            crocodile.targetX = clientX;
+        }
+
+        function onDeviceOrientation(e) {
+            if (gameState === 'playing' && e.gamma !== null) {
+                // gamma 是左右倾斜角度，-90 到 90
+                const tilt = e.gamma; // -30 到 30 度范围内
+                const sensitivity = 3;
+                crocodile.targetX = canvas.width / 2 + (tilt * sensitivity * 10);
+                crocodile.targetX = Math.max(crocodile.size/2, Math.min(canvas.width - crocodile.size/2, crocodile.targetX));
+                gyroEnabled = true;
+            }
+        }
+
+        // ==================== 游戏逻辑 ====================
+        function startGame() {
+            // 恢复 AudioContext
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            gameState = 'playing';
+            score = 0;
+            lives = CONFIG.INITIAL_LIVES;
+            crocodile.size = CONFIG.INITIAL_CROC_SIZE;
+            crocodile.x = canvas.width / 2;
+            crocodile.targetX = canvas.width / 2;
+            crocodile.y = canvas.height - 100;
+            items = [];
+            dropSpeed = CONFIG.BASE_DROP_SPEED;
+            spawnInterval = CONFIG.BASE_SPAWN_INTERVAL;
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            updateUI();
+            
+            if (animationId) cancelAnimationFrame(animationId);
+            gameLoop();
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState !== 'playing') return;
+            
+            // 生成新物品
+            if (timestamp - lastSpawnTime > spawnInterval) {
+                spawnItem();
+                lastSpawnTime = timestamp;
+            }
+            
+            // 更新鳄鱼位置
+            crocodile.x += (crocodile.targetX - crocodile.x) * 0.15;
+            crocodile.x = Math.max(crocodile.size/2, Math.min(canvas.width - crocodile.size/2, crocodile.x));
+            
+            // 更新物品位置
+            updateItems();
+            
+            // 绘制
+            draw();
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function spawnItem() {
+            // 加权随机选择
+            const totalWeight = ITEMS.reduce((sum, item) => sum + item.weight, 0);
+            let random = Math.random() * totalWeight;
+            let selectedItem = ITEMS[0];
+            
+            for (const item of ITEMS) {
+                random -= item.weight;
+                if (random <= 0) {
+                    selectedItem = item;
+                    break;
+                }
+            }
+            
+            items.push({
+                ...selectedItem,
+                x: Math.random() * (canvas.width - 60) + 30,
+                y: -40,
+                rotation: 0,
+                wobble: Math.random() * Math.PI * 2
+            });
+        }
+
+        function updateItems() {
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                item.y += dropSpeed;
+                item.wobble += 0.1;
+                item.x += Math.sin(item.wobble) * 0.5;
+                
+                // 边界检查
+                if (item.x < 20) item.x = 20;
+                if (item.x > canvas.width - 20) item.x = canvas.width - 20;
+                
+                // 碰撞检测
+                const dx = item.x - crocodile.x;
+                const dy = item.y - crocodile.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < (crocodile.size / 2 + 20)) {
+                    // 吃到物品
+                    handleEat(item);
+                    items.splice(i, 1);
+                    continue;
+                }
+                
+                // 超出屏幕
+                if (item.y > canvas.height + 50) {
+                    items.splice(i, 1);
+                }
+            }
+        }
+
+        function handleEat(item) {
+            switch(item.effect) {
+                case 'grow':
+                    score += item.points;
+                    crocodile.size = Math.min(CONFIG.MAX_CROC_SIZE, crocodile.size + 8);
+                    playSound('eat');
+                    showScorePopup(crocodile.x, crocodile.y - 50, `+${item.points}`);
+                    break;
+                case 'shrink':
+                    score += item.points;
+                    crocodile.size = Math.max(CONFIG.MIN_CROC_SIZE, crocodile.size - 8);
+                    playSound('eat');
+                    showScorePopup(crocodile.x, crocodile.y - 50, `+${item.points}`);
+                    break;
+                case 'damage':
+                    lives--;
+                    playSound('damage');
+                    document.body.classList.add('flash');
+                    setTimeout(() => document.body.classList.remove('flash'), 300);
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                    break;
+            }
+            
+            // 更新难度
+            updateDifficulty();
+            updateUI();
+        }
+
+        function updateDifficulty() {
+            const speedMultiplier = 1 + Math.floor(score / 100) * CONFIG.SPEED_INCREMENT;
+            dropSpeed = Math.min(
+                CONFIG.BASE_DROP_SPEED * CONFIG.MAX_SPEED_MULTIPLIER,
+                CONFIG.BASE_DROP_SPEED * speedMultiplier
+            );
+            
+            spawnInterval = Math.max(
+                500,
+                CONFIG.BASE_SPAWN_INTERVAL * (1 - Math.floor(score / 100) * CONFIG.INTERVAL_DECREMENT)
+            );
+        }
+
+        function showScorePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 800);
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = `� score: ${score}`;
+            document.getElementById('lives').textContent = '❤️'.repeat(lives);
+        }
+
+        function gameOver() {
+            gameState = 'gameOver';
+            playSound('gameOver');
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crocodileHighScore', highScore);
+            }
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('highScoreDisplay').textContent = highScore;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        // ==================== 绘制 ====================
+        function draw() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制波浪背景
+            drawWaves();
+            
+            // 绘制物品
+            items.forEach(item => {
+                ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.emoji, item.x, item.y);
+            });
+            
+            // 绘制鳄鱼
+            drawCrocodile();
+        }
+
+        function drawWaves() {
+            const time = Date.now() * 0.001;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x += 20) {
+                    const y = canvas.height - 50 - i * 30 + Math.sin(x * 0.02 + time + i) * 10;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        function drawCrocodile() {
+            const { x, y, size } = crocodile;
+            
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // 身体
+            ctx.font = `${size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐊', 0, 0);
+            
+            // 眼睛
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
+            ctx.arc(size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
+            ctx.arc(size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        function drawStartScreen() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#006994');
+            gradient.addColorStop(1, '#003366');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 装饰性鱼
+            ctx.font = '40px Arial';
+            const time = Date.now() * 0.001;
+            for (let i = 0; i < 8; i++) {
+                const fishX = (i * 150 + time * 30) % (canvas.width + 100) - 50;
+                const fishY = 100 + i * 60 + Math.sin(time + i) * 20;
+                ctx.globalAlpha = 0.3;
+                ctx.fillText(['🐟', '🐠', '🐡', '🦐'][i % 4], fishX, fishY);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // 启动
+        window.onload = init;
+    </script>
+</body>
+</html>
