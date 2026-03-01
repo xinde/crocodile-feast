@@ -552,7 +552,8 @@
             ctx.fillRect(50, 100, 50, 50);
             
             // 绘制物品
-            items.forEach(item => {
+            items.forEach((item, idx) => {
+                console.log("绘制物品", idx, item.emoji, item.x, item.y);
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
