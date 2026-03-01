@@ -538,7 +538,7 @@
             drawWaves();
             
             // 调试：检查items
-            console.log('🎯 items count:', items.length, 'gameState:', gameState);
+            console.log("🎯 items:", items.map(i => i.emoji + "(" + Math.round(i.x) + "," + Math.round(i.y) + ")"));
             // 绘制物品
             items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
