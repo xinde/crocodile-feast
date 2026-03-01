@@ -17,7 +17,7 @@
 
         body {
             width: 100vw;
-            height: 100dvh;
+            height: 100vh;
             overflow: hidden;
             font-family: 'Segoe UI', 'PingFang SC', sans-serif;
             background: linear-gradient(180deg, #006994 0%, #003366 100%);
@@ -331,7 +331,6 @@
         }
 
         function onDeviceOrientation(e) {
-            console.log("📱 gyro event:", e.gamma);
             if (gameState === 'playing' && e.gamma !== null) {
                 // gamma 是左右倾斜角度，-90 到 90
                 const tilt = e.gamma; // -30 到 30 度范围内
@@ -347,11 +346,6 @@
             // 恢复 AudioContext
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
-            }
-            
-            // iOS 13+ 陀螺仪权限
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(console.log).catch(console.error);
             }
             
             gameState = 'playing';
@@ -404,7 +398,6 @@
         }
 
         function spawnItem() {
-            console.log("🆕 spawnItem called");
             // 加权随机选择
             const totalWeight = ITEMS.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
@@ -421,7 +414,7 @@
             items.push({
                 ...selectedItem,
                 x: Math.random() * (canvas.width - 60) + 30,
-                y: 0,
+                y: -40,
                 rotation: 0,
                 wobble: Math.random() * Math.PI * 2
             });
@@ -531,20 +524,14 @@
 
         // ==================== 绘制 ====================
         function draw() {
-            
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             // 绘制波浪背景
             drawWaves();
             
-            // 测试：画红色矩形
-            
-            
-            
             // 绘制物品
-            items.forEach((item, idx) => {
-                
+            items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -577,11 +564,24 @@
             ctx.save();
             ctx.translate(x, y);
             
-            // 身体 - 使用emoji
+            // 身体
             ctx.font = `${size}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🐊', 0, 0);
+            
+            // 眼睛
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
+            ctx.arc(size * 0.15, -size * 0.25, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
+            ctx.arc(size * 0.15, -size * 0.25, size * 0.04, 0, Math.PI * 2);
+            ctx.fill();
             
             ctx.restore();
         }
