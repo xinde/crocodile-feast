@@ -331,6 +331,7 @@
         }
 
         function onDeviceOrientation(e) {
+            console.log("📱 gyro event:", e.gamma);
             if (gameState === 'playing' && e.gamma !== null) {
                 // gamma 是左右倾斜角度，-90 到 90
                 const tilt = e.gamma; // -30 到 30 度范围内
@@ -361,9 +362,6 @@
             firstFrame = true;
             lastSpawnTime = 0;
             
-            // 立即生成一个测试物品
-            spawnItem();
-            
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
             updateUI();
@@ -373,11 +371,7 @@
         }
 
         function gameLoop(timestamp) {
-            console.log('🔄 gameLoop called, gameState:', gameState, 'timestamp:', timestamp);
-            if (gameState !== 'playing') {
-                console.log('⚠️ 返回，不执行');
-                return;
-            }
+            if (gameState !== 'playing') return;
             
             // 第一次运行时初始化时间戳
             if (firstFrame || !timestamp) {
@@ -418,15 +412,13 @@
                 }
             }
             
-            const newItem = {
+            items.push({
                 ...selectedItem,
                 x: Math.random() * (canvas.width - 60) + 30,
                 y: -40,
                 rotation: 0,
                 wobble: Math.random() * Math.PI * 2
-            };
-            console.log('Created item:', newItem);
-            items.push(newItem);
+            });
         }
 
         function updateItems() {
@@ -533,7 +525,6 @@
 
         // ==================== 绘制 ====================
         function draw() {
-            console.log('🎨 draw() EXECUTING');
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
