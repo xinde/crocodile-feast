@@ -404,6 +404,7 @@
         }
 
         function spawnItem() {
+            console.log("🆕 spawnItem called");
             // 加权随机选择
             const totalWeight = ITEMS.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
