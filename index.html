@@ -212,8 +212,8 @@
             { type: 'small_fish', emoji: '🦑', points: 5, effect: 'shrink', weight: 10 },
             { type: 'small_fish', emoji: '🐙', points: 5, effect: 'shrink', weight: 10 },
             // 缩小食物
-            { type: 'shrink_food', emoji: '🧊', points: 5, effect: 'shrink', weight: 8 },
-            { type: 'shrink_food', emoji: '❄️', points: 5, effect: 'shrink', weight: 7 },
+            { type: 'shrink_food', emoji: '🧊', points: -5, effect: 'shrink', weight: 8 },
+            { type: 'shrink_food', emoji: '❄️', points: -5, effect: 'shrink', weight: 7 },
             // 炸弹 - 减命
             { type: 'bomb', emoji: '💣', points: 0, effect: 'damage', weight: 10 }
         ];
@@ -539,7 +539,6 @@
             drawWaves();
             
             // 调试：检查items
-            console.log("🎯 items:", JSON.stringify(items.map(i => ({emoji: i.emoji, x: Math.round(i.x), y: Math.round(i.y)}))));
             // 屏幕显示调试信息
             ctx.fillStyle = "red";
             ctx.font = "20px Arial";
@@ -554,7 +553,7 @@
             
             // 绘制物品
             items.forEach((item, idx) => {
-                console.log("绘制物品", idx, item.emoji, item.x, item.y);
+                
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
