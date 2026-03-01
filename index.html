@@ -232,6 +232,7 @@
         let highScore = parseInt(localStorage.getItem('crocodileHighScore')) || 0;
         let isDragging = false;
         let gyroEnabled = false;
+        let firstFrame = true; // 标记第一帧
 
         // ==================== 音频 ====================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -357,6 +358,8 @@
             items = [];
             dropSpeed = CONFIG.BASE_DROP_SPEED;
             spawnInterval = CONFIG.BASE_SPAWN_INTERVAL;
+            firstFrame = true;
+            lastSpawnTime = 0;
             
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
@@ -368,6 +371,12 @@
 
         function gameLoop(timestamp) {
             if (gameState !== 'playing') return;
+            
+            // 第一次运行时初始化时间戳
+            if (firstFrame || !timestamp) {
+                timestamp = performance.now();
+                firstFrame = false;
+            }
             
             // 生成新物品
             if (timestamp - lastSpawnTime > spawnInterval) {
