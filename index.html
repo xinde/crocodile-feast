@@ -539,6 +539,14 @@
             
             // 调试：检查items
             console.log("🎯 items:", JSON.stringify(items.map(i => ({emoji: i.emoji, x: Math.round(i.x), y: Math.round(i.y)}))));
+            // 屏幕显示调试信息
+            ctx.fillStyle = "red";
+            ctx.font = "20px Arial";
+            ctx.fillText("物品数: " + items.length, 10, 30);
+            items.forEach((item, i) => {
+                ctx.fillText(item.emoji + " y=" + Math.round(item.y), 10, 55 + i * 25);
+            });
+            
             // 绘制物品
             items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
