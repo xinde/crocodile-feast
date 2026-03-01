@@ -536,6 +536,8 @@
             // 绘制波浪背景
             drawWaves();
             
+            // 调试：检查items
+            console.log('🎯 items count:', items.length, 'gameState:', gameState);
             // 绘制物品
             items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
