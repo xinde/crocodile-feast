@@ -349,6 +349,11 @@
                 audioCtx.resume();
             }
             
+            // iOS 13+ 陀螺仪权限
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(console.log).catch(console.error);
+            }
+            
             gameState = 'playing';
             score = 0;
             lives = CONFIG.INITIAL_LIVES;
