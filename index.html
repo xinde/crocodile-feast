@@ -551,6 +551,7 @@
             ctx.fillStyle = "red";
             ctx.fillRect(50, 100, 50, 50);
             
+            console.log("DEBUG: 绘制前items长度=", items.length);
             // 绘制物品
             items.forEach((item, idx) => {
                 console.log("绘制物品", idx, item.emoji, item.x, item.y);
