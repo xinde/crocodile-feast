@@ -556,7 +556,7 @@
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(item.emoji, item.x, item.y);
+                ctx.fillStyle = "yellow"; ctx.fillRect(item.x - 10, item.y - 10, 20, 20);
             });
             
             // 绘制鳄鱼
