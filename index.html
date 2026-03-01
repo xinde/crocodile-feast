@@ -538,7 +538,7 @@
             drawWaves();
             
             // 调试：检查items
-            console.log("🎯 items:", items.map(i => i.emoji + "(" + Math.round(i.x) + "," + Math.round(i.y) + ")"));
+            console.log("🎯 items:", JSON.stringify(items.map(i => ({emoji: i.emoji, x: Math.round(i.x), y: Math.round(i.y)}))));
             // 绘制物品
             items.forEach(item => {
                 ctx.font = `${item.type === 'big_fish' ? 36 : 28}px Arial`;
