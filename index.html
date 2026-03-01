@@ -538,15 +538,6 @@
             // 绘制波浪背景
             drawWaves();
             
-            // 调试：检查items
-            // 屏幕显示调试信息
-            ctx.fillStyle = "red";
-            ctx.font = "20px Arial";
-            ctx.fillText("物品数: " + items.length, 10, 30);
-            items.forEach((item, i) => {
-                ctx.fillText(item.emoji + " y=" + Math.round(item.y), 10, 55 + i * 25);
-            });
-            
             // 测试：画红色矩形
             
             
