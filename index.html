@@ -398,6 +398,7 @@
         }
 
         function spawnItem() {
+            console.log('spawnItem called, items length:', items.length, 'interval:', spawnInterval);
             // 加权随机选择
             const totalWeight = ITEMS.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
@@ -411,13 +412,15 @@
                 }
             }
             
-            items.push({
+            const newItem = {
                 ...selectedItem,
                 x: Math.random() * (canvas.width - 60) + 30,
                 y: -40,
                 rotation: 0,
                 wobble: Math.random() * Math.PI * 2
-            });
+            };
+            console.log('Created item:', newItem);
+            items.push(newItem);
         }
 
         function updateItems() {
@@ -526,6 +529,11 @@
         function draw() {
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 调试：显示物品数量
+            if (items.length > 0) {
+                console.log('Drawing', items.length, 'items:', items);
+            }
             
             // 绘制波浪背景
             drawWaves();
